@@ -22,6 +22,7 @@ cdef extern from "DRS.h" nogil:
 		int EnableTrigger(int, int)
 		int SetTriggerSource(int)
 		int SetTriggerDelayPercent(int)
+		int SetTriggerDelayNs(int)
 		int SetTriggerPolarity(int)
 		int SetTriggerLevel(int)
 		int GetBoardType()
@@ -134,6 +135,9 @@ cdef class PyBoard:
 
 	def set_trigger_delay_percent(self, percent):
 		return self.board.SetTriggerDelayPercent(percent)
+	
+	def set_trigger_delay_ns(self, ns):
+		return self.board.SetTriggerDelayNs(ns)
 
 	def set_trigger_polarity(self, pol):
 		return self.board.SetTriggerPolarity(pol)
