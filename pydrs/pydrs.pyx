@@ -35,10 +35,8 @@ cdef extern from "DRS.h" nogil:
 		int TransferWaves(unsigned char*, int, int)
 		int IsEventAvailable()
 		int GetWave(unsigned int, unsigned char, float *)
-		int GetWave(unsigned int, unsigned char, float *, bool, int,
-					int, bool, float, bool)
-		int GetWave(unsigned char *, unsigned int, unsigned char, float *,
-					bool, int, int, bool, float, bool)
+		int GetWave(unsigned int, unsigned char, float *, bool, int, int, bool, float, bool)
+		int GetWave(unsigned char *, unsigned int, unsigned char, float *, bool, int, int, bool, float, bool)
 		double GetTemperature()
 		int GetChannelCascading()
 		int GetTimeCalibration(unsigned int, int, int, float *, bool)
