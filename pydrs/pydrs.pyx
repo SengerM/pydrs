@@ -177,8 +177,7 @@ cdef class PyBoard:
 		# trying new method
 		self.board.TransferWaves(self.buf, 0, 8)
 		cdef int trig_cell = self.board.GetStopCell(chip_index);
-		self.board.GetWave(self.buf, chip_index, channel*2, self.data[channel], True,
-						   trig_cell, 0, False, 0, True)
+		self.board.GetWave(chip_index, channel*2, self.data[channel])
 
 		# extrapolate first two samples
 		self.data[channel][1] = 2*self.data[channel][2] - self.data[channel][3]
@@ -241,10 +240,6 @@ cdef class PyBoard:
 		cdef np.ndarray[float] parr = npy.zeros((1024,), dtype=npy.float32)
 		if self.get_trigger():
 			self.get_waveform(0, channel)
-			for i in range(1024):
-				self.data[channel][i] *= 0.001
-				self.data[3][i] = (self.data[3][i] / 1000. - self.center + 0.5) * 65535
-			remove_spikes_new(self.data, npy.arange(channel,channel+1))
 			self.eventnum += 1
 			for i in range(1024):
 				parr[i] = self.data[channel][i]
