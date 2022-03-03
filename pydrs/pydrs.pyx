@@ -174,21 +174,9 @@ cdef class PyBoard:
 	@cython.boundscheck(False)
 	cdef get_waveform(self, unsigned int chip_index, unsigned char channel):
 		assert channel < 4
-		# trying new method
 		self.board.TransferWaves(self.buf, 0, 8)
 		cdef int trig_cell = self.board.GetStopCell(chip_index);
 		self.board.GetWave(chip_index, channel*2, self.data[channel])
-
-		# extrapolate first two samples
-		self.data[channel][1] = 2*self.data[channel][2] - self.data[channel][3]
-		self.data[channel][0] = 2*self.data[channel][1] - self.data[channel][2]
-
-		if channel != 3:
-			self.board.GetWave(self.buf, chip_index, 6, self.data[3], True,
-							   trig_cell, 0, False, 0, True)
-
-		self.data[3][1] = 2.*self.data[3][2] - self.data[3][3]
-		self.data[3][0] = 2.*self.data[3][1] - self.data[3][2]
 
 	@cython.boundscheck(False)
 	cdef get_waveforms(self, unsigned int chip_index,
