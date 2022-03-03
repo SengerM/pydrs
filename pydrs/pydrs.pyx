@@ -1,5 +1,5 @@
 # distutils: language = c++
-# distutils: sources = cpp/DRS.cpp cpp/mxml.c cpp/strlcpy.c cpp/averager.cpp cpp/musbstd.c
+# distutils: sources = pydrs/cpp/DRS.cpp pydrs/cpp/mxml.c pydrs/cpp/strlcpy.c pydrs/cpp/averager.cpp pydrs/cpp/musbstd.c
 # distutils: libraries = usb-1.0 util
 from libcpp cimport bool
 from libc.math cimport fabs
