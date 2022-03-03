@@ -31,6 +31,7 @@ cdef extern from "DRS.h" nogil:
 		int SoftTrigger()
 		int IsBusy()
 		int TransferWaves()
+		int TransferWaves(int firstChannel, int lastChannel)
 		int TransferWaves(unsigned char*, int, int)
 		int IsEventAvailable()
 		int GetWave(unsigned int, unsigned char, float *)
@@ -159,6 +160,9 @@ cdef class PyBoard:
 
 	def transfer_waves(self):
 		return self.board.TransferWaves()
+	
+	def transfer_waves_from_to(self, firstChannel: int, lastChannel: int):
+		return self.board.TransferWaves(firstChannel, lastChannel)
 
 	def is_event_available(self):
 		return self.board.IsEventAvailable()
@@ -247,7 +251,7 @@ cdef class PyBoard:
 			for i in range(1024):
 				parr[i] = self.data[channel][i]
 			return parr
-
+	
 	cdef _get_multiple(self, np.ndarray[long] channels):
 		cdef int i, j
 		self.get_waveforms(0, channels)
