@@ -232,7 +232,9 @@ cdef class PyBoard:
 		return parr
 
 	cpdef get_raw(self, int channel):
-		assert channel < 3
+		VALID_N_CHANNEL = {0,1,2,3}
+		if channel not in VALID_N_CHANNEL:
+			raise ValueError(f'`n_channel` must be in {repr(VALID_N_CHANNEL)}.')
 		cdef int i, j
 		cdef np.ndarray[float] parr = npy.zeros((1024,), dtype=npy.float32)
 		if self.get_trigger():
