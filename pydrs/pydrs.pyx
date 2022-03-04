@@ -153,10 +153,7 @@ cdef class PyBoard:
 	def is_busy(self):
 		return self.board.IsBusy()
 
-	def transfer_waves(self):
-		return self.board.TransferWaves()
-	
-	def bring_all_waveforms(self, firstChannel: int, lastChannel: int):
+	def transfer_waves(self, firstChannel: int, lastChannel: int):
 		return self.board.TransferWaves(firstChannel, lastChannel)
 
 	def is_event_available(self):
@@ -176,8 +173,7 @@ cdef class PyBoard:
 		self.board.GetWave(chip_index, channel*2, self.data[channel])
 
 	@cython.boundscheck(False)
-	cdef get_waveforms(self, unsigned int chip_index,
-						np.ndarray[long] channels):
+	cdef get_waveforms(self, unsigned int chip_index, np.ndarray[long] channels):
 		cdef int i, channel
 		for channel in channels:
 			assert channel < 4
@@ -185,21 +181,16 @@ cdef class PyBoard:
 		cdef int trig_cell = self.board.GetStopCell(chip_index)
 
 		for channel in channels:
-			self.board.GetWave(self.buf, chip_index, channel*2,
-							   self.data[channel], True, trig_cell, 0, False,
-							   0, True)
+			self.board.GetWave(self.buf, chip_index, channel*2, self.data[channel], True, trig_cell, 0, False, 0, True)
 
 			self.data[channel][1] = 2*self.data[channel][2] - self.data[channel][3]
 			self.data[channel][0] = 2*self.data[channel][1] - self.data[channel][2]
 
 		if 3 not in channels:
-			self.board.GetWave(self.buf, chip_index, 6,
-							   self.data[3], True, trig_cell, 0, False,
-							   0, True)
+			self.board.GetWave(self.buf, chip_index, 6, self.data[3], True, trig_cell, 0, False, 0, True)
 
 			self.data[3][1] = 2.*self.data[3][2] - self.data[3][3]
 			self.data[3][0] = 2.*self.data[3][1] - self.data[3][2]
-
 
 	cpdef get_raw(self, int channel):
 		VALID_N_CHANNEL = {0,1,2,3}
