@@ -82,11 +82,8 @@ cdef class PyBoard:
 	cdef public int sn, fw
 	cdef float data[4][1024]
 	cdef public float center
-	# cdef np.ndarray[np.float, ndim=2] arr
 	cdef readonly bool normaltrigger
-	# for filtering when removing spikes
 	cdef object ba
-	cdef public int eventnum
 	cdef unsigned char[18432] buf
 
 	cdef void from_board(self, DRSBoard *board, DRS *drs):
@@ -212,7 +209,6 @@ cdef class PyBoard:
 		cdef np.ndarray[float] parr = npy.zeros((1024,), dtype=npy.float32)
 		if self.get_trigger():
 			self.get_waveform(0, channel)
-			self.eventnum += 1
 			for i in range(1024):
 				parr[i] = self.data[channel][i]
 			return parr
@@ -223,8 +219,6 @@ cdef class PyBoard:
 		for i in range(1024):
 			for j in range(4):
 				self.data[j][i] = (self.data[j][i] / 1000. - self.center + 0.5) * 65535
-		self.eventnum += 1
-
 
 	def set_domino_mode(self, mode):
 		self.board.SetDominoMode(mode)
