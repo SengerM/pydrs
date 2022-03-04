@@ -159,7 +159,7 @@ cdef class PyBoard:
 	def transfer_waves(self):
 		return self.board.TransferWaves()
 	
-	def transfer_waves_from_to(self, firstChannel: int, lastChannel: int):
+	def bring_all_waveforms(self, firstChannel: int, lastChannel: int):
 		return self.board.TransferWaves(firstChannel, lastChannel)
 
 	def is_event_available(self):
@@ -204,22 +204,6 @@ cdef class PyBoard:
 			self.data[3][0] = 2.*self.data[3][1] - self.data[3][2]
 
 
-	cpdef get_corrected(self, int channel, bool remove=True):
-		assert channel < 4
-		cdef int i, j
-		self.get_waveform(0, channel)
-		for i in range(1024):
-			for j in range(4):
-				self.data[j][i] = (self.data[j][i] / 1000. - self.center + 0.5) * 65535
-		if remove:
-			remove_spikes_new(self.data, npy.arange(channel,channel+1))
-		self.eventnum += 1
-		cdef np.ndarray[float] parr = npy.zeros((1024,),
-														 dtype=npy.float32)
-		for i in range(1024):
-			parr[i] = self.data[channel][i]
-		return parr
-
 	cpdef get_raw(self, int channel):
 		VALID_N_CHANNEL = {0,1,2,3}
 		if channel not in VALID_N_CHANNEL:
@@ -239,29 +223,15 @@ cdef class PyBoard:
 		for i in range(1024):
 			for j in range(4):
 				self.data[j][i] = (self.data[j][i] / 1000. - self.center + 0.5) * 65535
-		remove_spikes_new(self.data, channels)
 		self.eventnum += 1
 
 
 	def set_domino_mode(self, mode):
 		self.board.SetDominoMode(mode)
 
-	def write_header(self, bytes filename, object channels):
-		_write_header(self.board, filename, channels)
-		self.eventnum = 0
-
-	def write_event(self, bytes filename, np.ndarray[long] channels):
-		cdef np.ndarray[float, ndim=2] parr
-		if self.get_trigger():
-			parr = self.get_multiple(channels)
-			_write_data(self.eventnum, filename, channels, self.board, parr)
-			return True
-		return False
-
 	cpdef get_multiple(self, np.ndarray[long] channels):
 		self._get_multiple(channels)
-		cdef np.ndarray[float, ndim=2] parr = npy.zeros((4, 1024),
-														 dtype=npy.float32)
+		cdef np.ndarray[float, ndim=2] parr = npy.zeros((4, 1024),ndtype=npy.float32)
 		cdef int i, j
 		for i in range(4):
 			for j in range(1024):
@@ -286,80 +256,3 @@ cdef class PyBoard:
 	def get_triggered(self, np.ndarray[long] channels):
 		if self.get_trigger():
 			return self.get_multiple(channels)
-
-
-cdef void diff(float inarr[1024], float outarr[1023]):
-	cdef int i
-	for i in range(1023):
-		outarr[i] = inarr[i+1] - inarr[i]
-
-cdef int where(float inarr[1023], int outarr[1023], float threshold):
-	cdef int i
-	cdef int c = 0
-	for i in range(1023 - 5):
-		if inarr[i] > threshold:
-			outarr[c] = i
-			c += 1
-	return c
-
-@cython.boundscheck(False)
-cdef void remove_spikes_new(float inarr[4][1024],
-							np.ndarray[long] channels, int ref=3):
-	#cdef np.ndarray[float] arr = npy.diff(inarr[ref][:-5])
-	#cdef np.ndarray[long] indices = npy.where(arr > 600)[0]
-	cdef float diffed[1023]
-	diff(inarr[ref], diffed)
-	cdef int thresholds[1023]
-	cdef int limit = where(diffed, thresholds, 600)
-
-	cdef int chnl, ind, index
-	cdef float val
-	for chnl in channels:
-		for ind in range(limit):
-			index = thresholds[ind]
-			val = (inarr[chnl][index -2] + inarr[chnl][index + 4]) / 2.
-			inarr[chnl][index] = val
-			inarr[chnl][index+1] = val
-			inarr[chnl][index+2] = val
-
-			# inarr[chnl][ind:ind+3] = (inarr[chnl][ind -2] + inarr[chnl][ind + 4]) / 2.
-
-
-cdef void _write_header(DRSBoard *board, bytes filename, object channels):
-	cdef float tcal[2048]
-	with open(filename, 'wb') as f:
-		f.write(b'TIME')
-		f.write(b'B#')
-		f.write(pack(b'h', board.GetBoardSerialNumber()))
-
-		for channel in channels:
-			f.write('C00{}'.format(channel + 1).encode('ASCII'))
-
-			# get time calibration
-			board.GetTimeCalibration(0, channel*2, 0, tcal, 0)
-			timecal = [(tcal[i] + tcal[i+1])/2. for i in range(0, 2048, 2)]
-			f.write(pack('f'*1024, *timecal))
-
-@cython.boundscheck(False)
-cdef void _write_data(int eventnum, bytes filename, np.ndarray[long] chnls,
-					  DRSBoard *board, np.ndarray[float, ndim=2] voltages):
-	cdef int sn = board.GetBoardSerialNumber()
-	cdef int tc = board.GetTriggerCell(0)
-	with open(filename, 'ab') as f:
-		# event header
-		f.write(b'EHDR')
-		f.write(pack(b'i', eventnum))
-
-		date = datetime.now()
-		datearr = [date.year, date.month, date.day, date.hour, date.minute,
-				   date.second, date.microsecond // 1000, 0]
-		f.write(pack(b'h'*8, *datearr))
-		f.write(b'B#')
-		f.write(pack(b'h', sn))
-		f.write(b'T#')
-		f.write(pack(b'h', tc))
-		# channel header
-		for channel in chnls:
-			f.write('C00{}'.format(channel + 1).encode('ASCII'))
-			voltarr = voltages[channel].astype(npy.uint16)
-			f.write(voltarr.tostring())

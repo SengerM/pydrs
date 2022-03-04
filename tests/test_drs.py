@@ -22,7 +22,7 @@ for n_trigger in range(5):
 	board.start_domino()
 	while board.is_busy():
 		pass
-	board.transfer_waves_from_to(0,8)
+	board.bring_all_waveforms(0,8)
 	for n_channel in [0,1,2,3]:
 		_ = pandas.DataFrame(
 			{
