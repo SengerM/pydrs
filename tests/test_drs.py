@@ -12,7 +12,7 @@ board.set_frequency(1, True)
 board.set_transp_mode(1)
 board.set_input_range(0)
 board.enable_trigger(1,0)
-board.set_trigger_source(1<<3)
+board.set_trigger_source(1<<0)
 board.set_trigger_level(-.05)
 board.set_trigger_polarity(True)
 board.set_trigger_delay_ns(980)
@@ -22,7 +22,7 @@ for n_trigger in range(5):
 	board.start_domino()
 	while board.is_busy():
 		pass
-	board.transfer_waves(0,8)
+	board.transfer_waves(0,8) # Bring waveforms from board to PC.
 	for n_channel in [0,1,2,3]:
 		_ = pandas.DataFrame(
 			{

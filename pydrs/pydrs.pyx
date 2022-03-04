@@ -167,9 +167,6 @@ cdef class PyBoard:
 
 	@cython.boundscheck(False)
 	cdef get_waveform(self, unsigned int chip_index, unsigned char channel):
-		assert channel < 4
-		self.board.TransferWaves(self.buf, 0, 8)
-		cdef int trig_cell = self.board.GetStopCell(chip_index);
 		self.board.GetWave(chip_index, channel*2, self.data[channel])
 
 	@cython.boundscheck(False)
@@ -196,13 +193,8 @@ cdef class PyBoard:
 		VALID_N_CHANNEL = {0,1,2,3}
 		if channel not in VALID_N_CHANNEL:
 			raise ValueError(f'`n_channel` must be in {repr(VALID_N_CHANNEL)}.')
-		cdef int i, j
-		cdef np.ndarray[float] parr = npy.zeros((1024,), dtype=npy.float32)
-		if self.get_trigger():
-			self.get_waveform(0, channel)
-			for i in range(1024):
-				parr[i] = self.data[channel][i]
-			return parr
+		self.get_waveform(0, channel)
+		return self.data[channel]
 	
 	cdef _get_multiple(self, np.ndarray[long] channels):
 		cdef int i, j
