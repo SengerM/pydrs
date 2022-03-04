@@ -166,8 +166,9 @@ cdef class PyBoard:
 		return self.board.GetStopCell(chip)
 
 	@cython.boundscheck(False)
-	cdef get_waveform(self, unsigned int chip_index, unsigned char channel):
-		self.board.GetWave(chip_index, channel*2, self.data[channel])
+	cdef get_wave(self, unsigned int chip_index, unsigned char channel):
+		"""Wrapper for `int DRSBoard::GetWave(unsigned int chipIndex, unsigned char channel, float *waveform)`."""
+		self.board.GetWave(chip_index, 2*channel, self.data[channel])
 
 	@cython.boundscheck(False)
 	cdef get_waveforms(self, unsigned int chip_index, np.ndarray[long] channels):
@@ -193,7 +194,7 @@ cdef class PyBoard:
 		VALID_N_CHANNEL = {0,1,2,3}
 		if channel not in VALID_N_CHANNEL:
 			raise ValueError(f'`n_channel` must be in {repr(VALID_N_CHANNEL)}.')
-		self.get_waveform(0, channel)
+		self.get_wave(0, channel)
 		return self.data[channel]
 	
 	cdef _get_multiple(self, np.ndarray[long] channels):
