@@ -121,16 +121,16 @@ class PythonFriendlyBoard:
 			raise NotImplementedError(f'I have implemented the external trigger, but I have not checked that it works.')
 		self.board.set_trigger_source(1<<VALID_TRIGGER_SOURCES.index(source))
 	
-	def set_trigger_level(self, level: float):
-		"""Set the trigger level, in volts.
+	def set_trigger_level(self, volts: float):
+		"""Set the trigger in volts.
 	
 		Parameters
 		----------
-		level: float
-			Voltage value for the trigger level.
+		volts: float
+			Voltage value for the trigger volts.
 		"""
-		ct.check_is_instance(level, 'level', (int, float))
-		self.board.set_trigger_level(level)
+		ct.check_is_instance(volts, 'volts', (int, float))
+		self.board.set_trigger_level(volts)
 	
 	def set_trigger_polarity(self, edge: str):
 		"""Set the trigger polarity to rising edge or falling edge.
