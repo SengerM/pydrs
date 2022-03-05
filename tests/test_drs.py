@@ -3,8 +3,8 @@ import numpy as np
 import plotly.express as px
 import pandas
 
-friendly_board = PythonFriendlyBoard()
-print(f'Connected with serial number: {friendly_board.serial_number}, firmware version: {friendly_board.firmware_version}')
+friendly_board = PythonFriendlyBoard() # Open the connection with the board. Here we assume only one board is connected to PC.
+print(f'Connected with {repr(friendly_board.idn)}')
 
 friendly_board.set_sampling_frequency(3e9)
 friendly_board.set_transparent_mode('on')

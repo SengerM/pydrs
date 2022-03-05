@@ -42,6 +42,11 @@ class PythonFriendlyBoard:
 			self._firmware_version = str(self.board.get_firmware_version())
 		return self._firmware_version
 	
+	@property
+	def idn(self) -> str:
+		"""Return a string with information about the board."""
+		return f'PSI DRS4 Evaluation Board (serial number: {self.serial_number}, firmware version: {self.firmware_version})'
+	
 	def set_sampling_frequency(self, frequency_Hz: float, wait: bool=True):
 		"""Set the sampling frequency.
 	
