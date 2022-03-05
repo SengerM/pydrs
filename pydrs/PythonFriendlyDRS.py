@@ -80,3 +80,19 @@ class PythonFriendlyBoard:
 		"""
 		ct.check_are_instances({'flag1':flag1,'flag2':flag2},bool)
 		self.board.enable_trigger(flag1,flag2)
+	
+	def set_trigger_source(self, source: str):
+		"""Set the trigger source (CH1, CH2, ...).
+		Parameters
+		----------
+		source: str
+			One of 'CH1','CH2','CH3','CH4','EXT'.
+		"""
+		VALID_TRIGGER_SOURCES = ['CH1','CH2','CH3','CH4','EXT']
+		ct.check_is_instance(source, 'source', str)
+		if source.upper() not in VALID_TRIGGER_SOURCES:
+			raise ValueError(f'`source` must be one of {VALID_TRIGGER_SOURCES}, received {repr(source)}.')
+		source = source.upper() # More human friendly to have this case unsensitive.
+		if source=='EXT':
+			raise NotImplementedError(f'I have implemented the external trigger, but I have not checked that it works.')
+		self.board.set_trigger_source(1<<VALID_TRIGGER_SOURCES.index(source))
