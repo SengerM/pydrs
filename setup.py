@@ -14,7 +14,7 @@ setuptools.setup(
 	author = "Matias Senger",
 	author_email = "matias.senger@cern.ch",
 	description = "Package to control the PSI DRS evaluation board from Python",
-	url = "",
+	url = "https://github.com/SengerM/pydrs",
 	packages = setuptools.find_packages(),
 	classifiers = [
 		"Programming Language :: Python :: 3",
