@@ -39,7 +39,7 @@ cdef extern from "DRS.h" nogil:
 		int GetWave(unsigned char *, unsigned int, unsigned char, float *, bool, int, int, bool, float, bool)
 		double GetTemperature()
 		int GetChannelCascading()
-		int GetTimeCalibration(unsigned int, int, int, float *, bool)
+		int GetTime(unsigned int chipIndex, int channelIndex, int tc, float *time) # I could not find this function defined in the `DRScpp` file, but it is used in the `drs_exam.cpp` example. I don't know where it is defined or why does it work, but it works...
 		int GetTriggerCell(unsigned int)
 		int GetStopCell(unsigned int)
 		int GetWaveformBufferSize()
@@ -77,10 +77,12 @@ cdef class PyDRS:
 
 
 cdef class PyBoard:
+	"""A wrapper for the `DRSBoard` class."""
 	cdef DRSBoard *board
 	cdef DRS *drs
 	cdef public int sn, fw
-	cdef float data[4][1024]
+	cdef float waveforms_buffer[8][1024]
+	cdef float times_buffer[8][1024]
 	cdef public float center
 	cdef readonly bool normaltrigger
 	cdef object ba
@@ -164,73 +166,28 @@ cdef class PyBoard:
 
 	def get_stop_cell(self, chip):
 		return self.board.GetStopCell(chip)
+	
+	def get_time(self, chip_index: int, channel_index: int, tc: int):
+		return self.board.GetTime(chip_index, channel_index, tc, self.times_buffer[channel_index])
 
 	@cython.boundscheck(False)
 	cdef get_wave(self, unsigned int chip_index, unsigned char channel):
 		"""Wrapper for `int DRSBoard::GetWave(unsigned int chipIndex, unsigned char channel, float *waveform)`."""
-		self.board.GetWave(chip_index, 2*channel, self.data[channel])
-
-	@cython.boundscheck(False)
-	cdef get_waveforms(self, unsigned int chip_index, np.ndarray[long] channels):
-		cdef int i, channel
-		for channel in channels:
-			assert channel < 4
-		self.board.TransferWaves(self.buf, 0, 8)
-		cdef int trig_cell = self.board.GetStopCell(chip_index)
-
-		for channel in channels:
-			self.board.GetWave(self.buf, chip_index, channel*2, self.data[channel], True, trig_cell, 0, False, 0, True)
-
-			self.data[channel][1] = 2*self.data[channel][2] - self.data[channel][3]
-			self.data[channel][0] = 2*self.data[channel][1] - self.data[channel][2]
-
-		if 3 not in channels:
-			self.board.GetWave(self.buf, chip_index, 6, self.data[3], True, trig_cell, 0, False, 0, True)
-
-			self.data[3][1] = 2.*self.data[3][2] - self.data[3][3]
-			self.data[3][0] = 2.*self.data[3][1] - self.data[3][2]
-
-	cpdef get_raw(self, int channel):
-		VALID_N_CHANNEL = {0,1,2,3}
-		if channel not in VALID_N_CHANNEL:
-			raise ValueError(f'`n_channel` must be in {repr(VALID_N_CHANNEL)}.')
-		self.get_wave(0, channel)
-		return self.data[channel]
-	
-	cdef _get_multiple(self, np.ndarray[long] channels):
-		cdef int i, j
-		self.get_waveforms(0, channels)
-		for i in range(1024):
-			for j in range(4):
-				self.data[j][i] = (self.data[j][i] / 1000. - self.center + 0.5) * 65535
+		self.board.GetWave(chip_index, 2*channel, self.waveforms_buffer[channel])
 
 	def set_domino_mode(self, mode):
 		self.board.SetDominoMode(mode)
-
-	cpdef get_multiple(self, np.ndarray[long] channels):
-		self._get_multiple(channels)
-		cdef np.ndarray[float, ndim=2] parr = npy.zeros((4, 1024),ndtype=npy.float32)
-		cdef int i, j
-		for i in range(4):
-			for j in range(1024):
-				parr[i][j] = self.data[i][j]
-		return parr
-
-	def get_trigger(self):
-		cdef int t
-		self.board.StartDomino()
-		if not self.normaltrigger:
-			self.board.SoftTrigger()
-			while self.board.IsBusy():
-				pass
-			return True
-		else:
-			t = time(NULL)
-			while not self.board.IsEventAvailable() or self.board.IsBusy():
-				if (time(NULL) - t) > 5:
-					return False
-			return True
-
-	def get_triggered(self, np.ndarray[long] channels):
-		if self.get_trigger():
-			return self.get_multiple(channels)
+	
+	cpdef get_waveform_buffer(self, int n_channel):
+		VALID_N_CHANNEL = {0,1,2,3}
+		if n_channel not in VALID_N_CHANNEL:
+			raise ValueError(f'`n_channel` must be in {repr(VALID_N_CHANNEL)}.')
+		self.get_wave(0, n_channel)
+		return self.waveforms_buffer[n_channel]
+	
+	cpdef get_time_buffer(self, int n_channel):
+		VALID_N_CHANNEL = {0,1,2,3}
+		if n_channel not in VALID_N_CHANNEL:
+			raise ValueError(f'`n_channel` must be in {repr(VALID_N_CHANNEL)}.')
+		self.get_wave(0, n_channel)
+		return self.times_buffer[n_channel]

@@ -24,9 +24,12 @@ for n_trigger in range(5):
 		pass
 	board.transfer_waves(0,8) # Bring waveforms from board to PC.
 	for n_channel in [0,1,2,3]:
+		# ~ board.get_wave(n_channel)
+		board.get_time(0,n_channel,board.get_trigger_cell())
 		_ = pandas.DataFrame(
 			{
-				'raw': board.get_raw(n_channel),
+				'Amplitude (V)': np.array(board.get_waveform_buffer(n_channel))*1e-3,
+				'Time (s)': np.array(board.get_time_buffer(n_channel))*1e-9,
 			}
 		)
 		_['n_trigger'] = n_trigger
@@ -36,8 +39,8 @@ for n_trigger in range(5):
 
 fig = px.line(
 	df,
-	x = 'n_sample',
-	y = 'raw',
+	x = 'Time (s)',
+	y = 'Amplitude (V)',
 	color = 'n_trigger',
 	facet_row = 'n_channel',
 )
