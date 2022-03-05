@@ -42,3 +42,14 @@ class PythonFriendlyBoard:
 			raise ValueError(f'`frequency_Hz` must be between 100e6 and 6e12, received {frequency_Hz}.')
 		self.board.set_frequency(freq=frequency_Hz*1e-9, wait=wait)
 	
+	def set_transparent_mode(self, status: str):
+		"""Enable or disable the transparent mode.
+		Parameters
+		----------
+		status: str
+			Either 'on' or 'off'.
+		"""
+		ct.check_is_instance(status, 'status', str)
+		if status.lower() not in {'on','off'}:
+			raise ValueError(f'`status` must be either "on" or "off", received {repr(status)}.')
+		self.board.set_transp_mode(True if status=='on' else False)
