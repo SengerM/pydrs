@@ -12,7 +12,7 @@ print(f'Connected with serial number: {friendly_board.serial_number}, firmware v
 friendly_board.set_sampling_frequency(3e9)
 friendly_board.set_transparent_mode('on')
 friendly_board.set_input_range(0)
-board.enable_trigger(1,0)
+friendly_board.enable_trigger(True,False)
 board.set_trigger_source(1<<0)
 board.set_trigger_level(-.1)
 board.set_trigger_polarity(True)

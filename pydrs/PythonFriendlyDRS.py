@@ -4,7 +4,9 @@ from . import _check_types as ct
 
 class PythonFriendlyBoard:
 	"""A wrapper for the `PyBoard` class that is less "C++ masochist" and 
-	more "Python friendly"."""
+	more "Python friendly". This means that error messages are meaningful,
+	data types are those you would expect in Python, and things are made
+	to make your life easier."""
 	def __init__(self, board, auto_init=True):
 		if not isinstance(board, PyBoard):
 			raise TypeError(f'`board` must be an instance of {repr(PyBoard)}.')
@@ -65,3 +67,16 @@ class PythonFriendlyBoard:
 		if not 0 <= center <= .5:
 			raise ValueError(f'`center` must be between 0 and 0.5, received {repr(center)}.') # In `DRS.cpp` we find this: `if (center < 0 || center > 0.5) return 0;`
 		self.board.set_input_range(center)
+	
+	def enable_trigger(self, flag1: bool, flag2: bool):
+		"""Enable the trigger? Sorry, there is no documentation about this
+		function.
+		Parameters
+		----------
+		flag1: bool
+			I have no idea what this flag does.
+		flag2: bool
+			I have no idea either. Sorry.
+		"""
+		ct.check_are_instances({'flag1':flag1,'flag2':flag2},bool)
+		self.board.enable_trigger(flag1,flag2)
