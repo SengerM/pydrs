@@ -47,22 +47,22 @@ class PythonFriendlyBoard:
 		"""Return a string with information about the board."""
 		return f'PSI DRS4 Evaluation Board (serial number: {self.serial_number}, firmware version: {self.firmware_version})'
 	
-	def set_sampling_frequency(self, frequency_Hz: float, wait: bool=True):
+	def set_sampling_frequency(self, Hz: float, wait: bool=True):
 		"""Set the sampling frequency.
 	
 		Parameters
 		----------
-		frequency_Hz: float
+		Hz: float
 			The value for the sampling frequency in Hertz. If you want
-			a sampling frequency of 1 GHz then use `frequency_Hz=1e9`.
+			a sampling frequency of 1 GHz then use `Hz=1e9`.
 		wait: bool, default True
 			Wait until the PLL is locked.
 		"""
-		ct.check_is_instance(frequency_Hz, 'frequency_Hz', (int, float))
+		ct.check_is_instance(Hz, 'Hz', (int, float))
 		ct.check_is_instance(wait, 'wait', bool)
-		if not 100e6 <= frequency_Hz <= 6e9: # This is from `DRS.cpp`: /* allowed range is 100 MHz to 6 GHz */
-			raise ValueError(f'`frequency_Hz` must be between 100e6 and 6e12, received {frequency_Hz}.')
-		self.board.set_frequency(freq=frequency_Hz*1e-9, wait=wait)
+		if not 100e6 <= Hz <= 6e9: # This is from `DRS.cpp`: /* allowed range is 100 MHz to 6 GHz */
+			raise ValueError(f'`Hz` must be between 100e6 and 6e12, received {Hz}.')
+		self.board.set_frequency(freq=Hz*1e-9, wait=wait)
 	
 	def set_transparent_mode(self, status: str):
 		"""Enable or disable the transparent mode.
