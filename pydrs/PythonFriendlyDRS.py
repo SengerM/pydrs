@@ -53,3 +53,15 @@ class PythonFriendlyBoard:
 		if status.lower() not in {'on','off'}:
 			raise ValueError(f'`status` must be either "on" or "off", received {repr(status)}.')
 		self.board.set_transp_mode(True if status=='on' else False)
+	
+	def set_input_range(self, center: float):
+		"""Set the input range.
+		Parameters
+		----------
+		center: float
+			From the help in `drscl` app: "Input range to <center>+=0.5V".
+		"""
+		ct.check_is_instance(center, 'center', (int, float))
+		if not 0 <= center <= .5:
+			raise ValueError(f'`center` must be between 0 and 0.5, received {repr(center)}.') # In `DRS.cpp` we find this: `if (center < 0 || center > 0.5) return 0;`
+		self.board.set_input_range(center)
