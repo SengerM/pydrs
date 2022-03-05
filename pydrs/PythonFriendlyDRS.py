@@ -139,16 +139,16 @@ class PythonFriendlyBoard:
 		ct.check_is_instance(seconds,'seconds',(float, int))
 		self.board.set_trigger_delay_ns(seconds*1e9)
 	
-	def acquire_single_trigger(self):
+	def wait_for_single_trigger(self):
 		"""Blocks the execution of the program until the board triggers
 		once. Then, the data is brought to the computer and you can later
 		on access to it using the `get_waveform` method.
 		"""
+		# I wrote this function following the example `drs_exam.cpp`.
 		self.board.start_domino() # Not sure what this is doing, but it is needed.
 		while self.board.is_busy(): # Wait for the trigger to happen.
 			pass
 		self.board.transfer_waves(0,8) # Bring all the waveforms from board to PC.
-		
 		
 	def get_waveform(self, n_channel: int) -> dict:
 		"""After the board has triggered you can use this method to access
@@ -165,4 +165,12 @@ class PythonFriendlyBoard:
 			A dictionary of the form `{'Time (s)': np.array, 'Amplitude (V)': np.array}`
 			containing the data.
 		"""
-		raise NotImplementedError()
+		# I wrote this function following the example `drs_exam.cpp`.
+		ct.check_is_instance(n_channel,'n_channel',int)
+		if n_channel not in {1,2,3,4}:
+			raise ValueError(f'`n_channel` must be one of 1,2,3 or 4, received {repr(n_channel)}.')
+		self.board.get_time(0,n_channel-1,self.board.get_trigger_cell()) # Not sure what this does, but it was in `drs_exam.cpp`.
+		return {
+			'Amplitude (V)': np.array(self.board.get_waveform_buffer(n_channel-1))*1e-3,
+			'Time (s)': np.array(self.board.get_time_buffer(n_channel-1))*1e-9,
+		}

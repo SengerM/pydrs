@@ -16,24 +16,21 @@ friendly_board.enable_trigger(True,False)
 friendly_board.set_trigger_source('ch2')
 friendly_board.set_trigger_level(.2)
 friendly_board.set_trigger_polarity('rising')
-friendly_board.set_trigger_delay(141e-9)
+friendly_board.set_trigger_delay(166e-9)
 
 df = pandas.DataFrame()
 for n_trigger in range(5):
-	friendly_board.acquire_single_trigger()
-	for n_channel in [0,1,2,3]:
-		# ~ board.get_wave(n_channel)
-		board.get_time(0,n_channel,board.get_trigger_cell())
-		_ = pandas.DataFrame(
-			{
-				'Amplitude (V)': np.array(board.get_waveform_buffer(n_channel))*1e-3,
-				'Time (s)': np.array(board.get_time_buffer(n_channel))*1e-9,
-			}
-		)
-		_['n_trigger'] = n_trigger
-		_['n_channel'] = n_channel
-		_['n_sample'] = _.index
-		df = df.append(_, ignore_index=True)
+	friendly_board.wait_for_single_trigger()
+	for n_channel in [1,2,3,4]:
+		for n_acquire in [1]:
+			_ = pandas.DataFrame(
+				friendly_board.get_waveform(n_channel),
+			)
+			_['n_trigger'] = n_trigger
+			_['n_channel'] = n_channel
+			_['n_sample'] = _.index
+			_['n_acquire'] = n_acquire
+			df = df.append(_, ignore_index=True)
 
 fig = px.line(
 	df,
@@ -41,5 +38,6 @@ fig = px.line(
 	y = 'Amplitude (V)',
 	color = 'n_trigger',
 	facet_row = 'n_channel',
+	symbol = 'n_acquire',
 )
 fig.write_html('deleteme.html', include_plotlyjs='cdn')
