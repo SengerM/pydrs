@@ -1,11 +1,13 @@
-from pydrs import PyDRS
+from pydrs.pydrs_bindings import PyDRS
+from pydrs.PythonFriendlyDRS import PythonFriendlyBoard
 import numpy as np
 import plotly.express as px
 import pandas
 
 drs = PyDRS()
 board = drs.get_board(0)
-print(f'Connected with serial number: {board.get_board_serial_number()}, firmware version: {board.get_firmware_version()}')
+friendly_board = PythonFriendlyBoard(board)
+print(f'Connected with serial number: {friendly_board.serial_number}, firmware version: {friendly_board.firmware_version}')
 
 board.init()
 board.set_frequency(3, True)
