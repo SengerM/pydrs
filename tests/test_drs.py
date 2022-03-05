@@ -8,14 +8,14 @@ board = drs.get_board(0)
 print(f'Connected with serial number: {board.get_board_serial_number()}, firmware version: {board.get_firmware_version()}')
 
 board.init()
-board.set_frequency(1, True)
+board.set_frequency(3, True)
 board.set_transp_mode(1)
 board.set_input_range(0)
 board.enable_trigger(1,0)
 board.set_trigger_source(1<<0)
-board.set_trigger_level(-.05)
+board.set_trigger_level(-.1)
 board.set_trigger_polarity(True)
-board.set_trigger_delay_ns(980)
+board.set_trigger_delay_ns(141)
 
 df = pandas.DataFrame()
 for n_trigger in range(5):
