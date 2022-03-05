@@ -6,7 +6,9 @@ class PythonFriendlyBoard:
 	"""A wrapper for the `pydrs_bindings.PyBoard` class that is less 
 	"C++ masochist" and more "Python friendly". This means that error 
 	messages are meaningful, data types are those you would expect in 
-	Python, and things are made	to make your life easier."""
+	Python, and things are made	to make your life easier.
+	You can go into "masochist mode" by accessing to the Cython binding
+	methods directly into `PythonFriendlyBoard.board`."""
 	def __init__(self, n_board: int=0, auto_init=True):
 		"""Create an instance of `PythonFriendlyBoard`.
 		

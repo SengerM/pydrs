@@ -1,4 +1,4 @@
-from pydrs.PythonFriendlyDRS import PythonFriendlyBoard
+from pydrs import PythonFriendlyBoard
 import numpy as np
 import plotly.express as px
 import pandas
@@ -20,7 +20,7 @@ df = pandas.DataFrame() # Here I will store some data to plot later on.
 for n_trigger in range(5):
 	friendly_board.wait_for_single_trigger() # Halt the program until the board triggers so then we acquire the data.
 	for n_channel in [1,2,3,4]:
-		waveform_data = friendly_board.get_waveform(n_channel)
+		waveform_data = friendly_board.get_waveform(n_channel) # This returns data in standard numpy arrays.
 		# Store the data in the data frame to plot later on...
 		temp_df = pandas.DataFrame(waveform_data)
 		temp_df['n_trigger'] = n_trigger
