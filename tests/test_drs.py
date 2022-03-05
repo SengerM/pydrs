@@ -13,17 +13,14 @@ friendly_board.set_sampling_frequency(3e9)
 friendly_board.set_transparent_mode('on')
 friendly_board.set_input_range(0)
 friendly_board.enable_trigger(True,False)
-friendly_board.set_trigger_source('ch1')
-board.set_trigger_level(-.1)
-board.set_trigger_polarity(True)
-board.set_trigger_delay_ns(141)
+friendly_board.set_trigger_source('ch2')
+friendly_board.set_trigger_level(.2)
+friendly_board.set_trigger_polarity('rising')
+friendly_board.set_trigger_delay(141e-9)
 
 df = pandas.DataFrame()
 for n_trigger in range(5):
-	board.start_domino()
-	while board.is_busy():
-		pass
-	board.transfer_waves(0,8) # Bring waveforms from board to PC.
+	friendly_board.acquire_single_trigger()
 	for n_channel in [0,1,2,3]:
 		# ~ board.get_wave(n_channel)
 		board.get_time(0,n_channel,board.get_trigger_cell())

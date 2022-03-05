@@ -30,6 +30,7 @@ class PythonFriendlyBoard:
 	
 	def set_sampling_frequency(self, frequency_Hz: float, wait: bool=True):
 		"""Set the sampling frequency.
+	
 		Parameters
 		----------
 		frequency_Hz: float
@@ -46,6 +47,7 @@ class PythonFriendlyBoard:
 	
 	def set_transparent_mode(self, status: str):
 		"""Enable or disable the transparent mode.
+	
 		Parameters
 		----------
 		status: str
@@ -58,6 +60,7 @@ class PythonFriendlyBoard:
 	
 	def set_input_range(self, center: float):
 		"""Set the input range.
+		
 		Parameters
 		----------
 		center: float
@@ -71,6 +74,7 @@ class PythonFriendlyBoard:
 	def enable_trigger(self, flag1: bool, flag2: bool):
 		"""Enable the trigger? Sorry, there is no documentation about this
 		function.
+	
 		Parameters
 		----------
 		flag1: bool
@@ -83,6 +87,7 @@ class PythonFriendlyBoard:
 	
 	def set_trigger_source(self, source: str):
 		"""Set the trigger source (CH1, CH2, ...).
+	
 		Parameters
 		----------
 		source: str
@@ -96,3 +101,68 @@ class PythonFriendlyBoard:
 		if source=='EXT':
 			raise NotImplementedError(f'I have implemented the external trigger, but I have not checked that it works.')
 		self.board.set_trigger_source(1<<VALID_TRIGGER_SOURCES.index(source))
+	
+	def set_trigger_level(self, level: float):
+		"""Set the trigger level, in volts.
+	
+		Parameters
+		----------
+		level: float
+			Voltage value for the trigger level.
+		"""
+		ct.check_is_instance(level, 'level', (int, float))
+		self.board.set_trigger_level(level)
+	
+	def set_trigger_polarity(self, edge: str):
+		"""Set the trigger polarity to rising edge or falling edge.
+	
+		Parameters
+		----------
+		edge: str
+			Either 'rising' or 'falling'.
+		"""
+		ct.check_is_instance(edge, 'edge', str)
+		VALID_EDGE_VALUES = {'falling','rising'}
+		if edge.lower() not in VALID_EDGE_VALUES:
+			raise ValueError(f'`edge` must be one of {VALID_EDGE_VALUES}, received {repr(edge)}.')
+		edge = edge.lower() # Make it case unsensitive, more human friendly.
+		self.board.set_trigger_polarity(True if edge=='falling' else False)
+	
+	def set_trigger_delay(self, seconds: float):
+		"""Set the trigger delay in seconds.
+	
+		Parameters
+		----------
+		seconds: float
+			Delay time, in seconds. If you want 100 ns use `seconds=100e-9`.
+		"""
+		ct.check_is_instance(seconds,'seconds',(float, int))
+		self.board.set_trigger_delay_ns(seconds*1e9)
+	
+	def acquire_single_trigger(self):
+		"""Blocks the execution of the program until the board triggers
+		once. Then, the data is brought to the computer and you can later
+		on access to it using the `get_waveform` method.
+		"""
+		self.board.start_domino() # Not sure what this is doing, but it is needed.
+		while self.board.is_busy(): # Wait for the trigger to happen.
+			pass
+		self.board.transfer_waves(0,8) # Bring all the waveforms from board to PC.
+		
+		
+	def get_waveform(self, n_channel: int) -> dict:
+		"""After the board has triggered you can use this method to access
+		the data.
+		
+		Parameters
+		----------
+		n_channel: int
+			Number of channel from which to get the data.
+		
+		Returns
+		-------
+		waveform_data: dict
+			A dictionary of the form `{'Time (s)': np.array, 'Amplitude (V)': np.array}`
+			containing the data.
+		"""
+		raise NotImplementedError()
