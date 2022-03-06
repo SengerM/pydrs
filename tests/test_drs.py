@@ -7,14 +7,14 @@ friendly_board = PythonFriendlyBoard() # Open the connection with the board. Her
 print(f'Connected with {repr(friendly_board.idn)}')
 
 # The following lines are self explanatory :)
-friendly_board.set_sampling_frequency(Hz=3e9)
+friendly_board.set_sampling_frequency(Hz=5e9)
 friendly_board.set_transparent_mode('on')
 friendly_board.set_input_range(center=0)
 friendly_board.enable_trigger(True,False) # Don't know what this line does, it was in the example `drs_exam.cpp`.
-friendly_board.set_trigger_source('ch2')
-friendly_board.set_trigger_level(volts=.2)
-friendly_board.set_trigger_polarity(edge='rising')
-friendly_board.set_trigger_delay(seconds=166e-9)
+friendly_board.set_trigger_source('ch4')
+friendly_board.set_trigger_level(volts=-.1)
+friendly_board.set_trigger_polarity(edge='falling')
+friendly_board.set_trigger_delay(seconds=100e-9)
 
 df = pandas.DataFrame() # Here I will store some data to plot later on.
 for n_trigger in range(5):
