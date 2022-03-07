@@ -119,8 +119,6 @@ class PythonFriendlyBoard:
 		if source.upper() not in VALID_TRIGGER_SOURCES:
 			raise ValueError(f'`source` must be one of {VALID_TRIGGER_SOURCES}, received {repr(source)}.')
 		source = source.upper() # More human friendly to have this case unsensitive.
-		if source=='EXT':
-			raise NotImplementedError(f'I have implemented the external trigger, but I have not checked that it works.')
 		self.board.set_trigger_source(1<<VALID_TRIGGER_SOURCES.index(source))
 	
 	def set_trigger_level(self, volts: float):
