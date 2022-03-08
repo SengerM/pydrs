@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas
 from pathlib import Path
 
-board = pydrs.get_board(0) # Open the connection with the board. Here we assume only one board is connected to PC.
+board = pydrs.get_board(0) # Open the connection with the board.
 print(f'Connected with {board.idn}')
 
 # The following lines are self explanatory :)

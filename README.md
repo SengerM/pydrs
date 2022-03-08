@@ -16,48 +16,37 @@ You may need to additionally install [Cython](https://cython.org/) (`pip install
 
 ## Usage
 
-This was designed to be easy and intuitive to use. The following example should be *plug'n play* if you have connected only one board to your computer via USB.
+This package was designed to be easy and intuitive to use. Below there is a simple example, further examples [here](examples).
 ```Python
-from pydrs import PythonFriendlyBoard
-import numpy as np
-import plotly.express as px
-import pandas
+import pydrs
 
-friendly_board = PythonFriendlyBoard() # Open the connection with the board. Here we assume only one board is connected to PC.
-print(f'Connected with {repr(friendly_board.idn)}')
+board = pydrs.get_board(0) # Open the connection with the board number 0.
+print(f'Connected with {board.idn}')
 
 # The following lines are self explanatory :)
-friendly_board.set_sampling_frequency(Hz=3e9)
-friendly_board.set_transparent_mode('on')
-friendly_board.set_input_range(center=0)
-friendly_board.enable_trigger(True,False) # Don't know what this line does, it was in the example `drs_exam.cpp`.
-friendly_board.set_trigger_source('ch2')
-friendly_board.set_trigger_level(volts=.2)
-friendly_board.set_trigger_polarity(edge='rising')
-friendly_board.set_trigger_delay(seconds=166e-9)
+board.set_sampling_frequency(Hz=5e9)
+board.set_transparent_mode('on')
+board.set_input_range(center=0)
+board.enable_trigger(True,False) # Don't know what this line does, it was in the example `drs_exam.cpp`.
+board.set_trigger_source('ch4')
+board.set_trigger_level(volts=-.1)
+board.set_trigger_polarity(edge='falling')
+board.set_trigger_delay(seconds=150e-9)
 
-df = pandas.DataFrame() # Here I will store some data to plot later on.
-for n_trigger in range(5):
-	friendly_board.wait_for_single_trigger() # Halt the program until the board triggers so then we acquire the data.
-	for n_channel in [1,2,3,4]:
-		waveform_data = friendly_board.get_waveform(n_channel) # This returns data in standard numpy arrays.
-		# Store the data in the data frame to plot later on...
-		temp_df = pandas.DataFrame(waveform_data)
-		temp_df['n_trigger'] = n_trigger
-		temp_df['n_channel'] = n_channel
-		temp_df['n_sample'] = temp_df.index
-		df = df.append(temp_df, ignore_index=True)
+print('Waiting for trigger...')
+board.wait_for_single_trigger() # Halt the program until the board triggers so then we acquire the data.
 
-# Plot...
-fig = px.line(
-	df,
-	x = 'Time (s)',
-	y = 'Amplitude (V)',
-	color = 'n_trigger',
-	facet_row = 'n_channel',
-)
-fig.write_html('deleteme.html', include_plotlyjs='cdn')
+waveform_data = board.get_waveform(n_channel=1) # This returns data in standard numpy arrays, as you would probably expect in Python.
 
+print(waveform_data)
+```
+The previous code should print something like
+```
+Connected with PSI DRS4 Evaluation Board (serial number: 2946, firmware version: 30000)
+{'Amplitude (V)': array([-0.0046    , -0.17189999, -0.0068    , ..., -0.007     ,
+       -0.0064    , -0.0073    ]), 
+ 'Time (s)': array([0.00000000e+00, 1.95312500e-10, 3.90625000e-10, ...,
+       1.99414063e-07, 1.99609375e-07, 1.99804688e-07])}
 ```
 
 ## Additional remarks
