@@ -80,13 +80,8 @@ cdef class PyBoard:
 	"""A wrapper for the `DRSBoard` class."""
 	cdef DRSBoard *board
 	cdef DRS *drs
-	cdef public int sn, fw
 	cdef float waveforms_buffer[8][1024]
 	cdef float times_buffer[8][1024]
-	cdef public float center
-	cdef readonly bool normaltrigger
-	cdef object ba
-	cdef unsigned char[18432] buf
 
 	cdef void from_board(self, DRSBoard *board, DRS *drs):
 		self.board = board
@@ -96,12 +91,10 @@ cdef class PyBoard:
 		del self.board
 
 	def get_board_serial_number(self):
-		self.sn = self.board.GetBoardSerialNumber()
-		return self.sn
+		return self.board.GetBoardSerialNumber()
 
 	def get_firmware_version(self):
-		self.fw = self.board.GetFirmwareVersion()
-		return self.fw
+		return self.board.GetFirmwareVersion()
 
 	def get_board_type(self):
 		return self.board.GetBoardType()
@@ -116,7 +109,6 @@ cdef class PyBoard:
 		return self.board.SetFrequency(freq, wait)
 
 	def set_input_range(self, center):
-		self.center = center
 		return self.board.SetInputRange(center)
 
 	def set_transp_mode(self, flag):
@@ -124,9 +116,6 @@ cdef class PyBoard:
 
 	def enable_trigger(self, flag1, flag2):
 		return self.board.EnableTrigger(flag1, flag2)
-
-	def set_trigger_mode(self, mode):
-		self.normaltrigger = mode
 
 	def set_trigger_source(self, source):
 		return self.board.SetTriggerSource(source)
