@@ -2,60 +2,38 @@
 # distutils: sources = pydrs/cpp/DRS.cpp pydrs/cpp/mxml.c pydrs/cpp/strlcpy.c pydrs/cpp/averager.cpp pydrs/cpp/musbstd.c
 # distutils: libraries = usb-1.0 util
 from libcpp cimport bool
-from libc.math cimport fabs
-cimport numpy as np
 cimport cython
-import numpy as npy
-cdef bool can_remove = 1
-from datetime import datetime
-from struct import pack
-
 
 cdef extern from "DRS.h" nogil:
 	cdef cppclass DRSBoard:
 		int GetBoardSerialNumber()
 		int GetFirmwareVersion()
 		int Init()
-		int SetFrequency(double, bool)
-		int SetInputRange(double)
-		int SetTranspMode(int)
-		int EnableTrigger(int, int)
-		int SetTriggerSource(int)
-		int SetTriggerDelayPercent(int)
-		int SetTriggerDelayNs(int)
-		int SetTriggerPolarity(bool)
-		int SetTriggerLevel(double)
+		int SetFrequency(double freq, bool wait)
+		int SetInputRange(double center)
+		int SetTranspMode(int flag)
+		int EnableTrigger(int flag1, int flag2)
+		int SetTriggerSource(int source)
+		int SetTriggerDelayNs(int delay)
+		int SetTriggerPolarity(bool negative)
+		int SetTriggerLevel(double value)
 		int GetBoardType()
 		int StartDomino()
-		int SetDominoMode(unsigned char)
+		int SetDominoMode(unsigned char mode)
 		int SoftTrigger()
 		int IsBusy()
-		int TransferWaves()
 		int TransferWaves(int firstChannel, int lastChannel)
-		int TransferWaves(unsigned char*, int, int)
 		int IsEventAvailable()
-		int GetWave(unsigned int, unsigned char, float *)
-		int GetWave(unsigned int, unsigned char, float *, bool, int, int, bool, float, bool)
-		int GetWave(unsigned char *, unsigned int, unsigned char, float *, bool, int, int, bool, float, bool)
+		int GetWave(unsigned int chipIndex, unsigned char channel, float *waveform)
 		double GetTemperature()
-		int GetChannelCascading()
-		int GetTime(unsigned int chipIndex, int channelIndex, int tc, float *time) # I could not find this function defined in the `DRScpp` file, but it is used in the `drs_exam.cpp` example. I don't know where it is defined or why does it work, but it works...
+		int GetTime(unsigned int chipIndex, int channelIndex, int tc, float *time) # I could not find this function defined in the `DRS.cpp` file nor in `DRS.h`, but it is used in the `drs_exam.cpp` example. I don't know where it is defined or why does it work, but it works...
 		int GetTriggerCell(unsigned int)
-		int GetStopCell(unsigned int)
-		int GetWaveformBufferSize()
-		unsigned char GetStopWSR(unsigned int)
 
 cdef extern from "DRS.h" nogil:
 	cdef cppclass DRS:
 		DRS() except +
 		int GetNumberOfBoards()
 		DRSBoard *GetBoard(int)
-
-
-cdef extern from "time.h" nogil:
-	ctypedef int time_t
-	time_t time(time_t *)
-
 
 cdef class PyDRS:
 	cdef DRS *drs
@@ -74,7 +52,6 @@ cdef class PyDRS:
 		board = PyBoard()
 		board.from_board(self.drs.GetBoard(i), self.drs)
 		return board
-
 
 cdef class PyBoard:
 	"""A wrapper for the `DRSBoard` class."""
@@ -120,9 +97,6 @@ cdef class PyBoard:
 	def set_trigger_source(self, source):
 		return self.board.SetTriggerSource(source)
 
-	def set_trigger_delay_percent(self, percent):
-		return self.board.SetTriggerDelayPercent(percent)
-	
 	def set_trigger_delay_ns(self, ns):
 		return self.board.SetTriggerDelayNs(ns)
 
@@ -150,12 +124,6 @@ cdef class PyBoard:
 	def is_event_available(self):
 		return self.board.IsEventAvailable()
 
-	def get_channel_cascading(self):
-		return self.board.GetChannelCascading()
-
-	def get_stop_cell(self, chip):
-		return self.board.GetStopCell(chip)
-	
 	def get_time(self, chip_index: int, channel_index: int, tc: int):
 		return self.board.GetTime(chip_index, channel_index, tc, self.times_buffer[channel_index])
 
