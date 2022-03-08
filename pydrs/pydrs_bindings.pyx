@@ -49,11 +49,11 @@ cdef class PyDRS:
 		return self.drs.GetNumberOfBoards()
 
 	def get_board(self, int i):
-		board = PyBoard()
+		board = PyDRSBoard()
 		board.from_board(self.drs.GetBoard(i), self.drs)
 		return board
 
-cdef class PyBoard:
+cdef class PyDRSBoard:
 	cdef DRSBoard *board
 	cdef DRS *drs
 	cdef float waveforms_buffer[8][1024]

@@ -1,4 +1,4 @@
-from .pydrs_bindings import PyDRS
+from .pydrs_bindings import PyDRSBoard
 import numpy as np
 from . import _check_types as ct
 
@@ -9,26 +9,17 @@ class PythonFriendlyBoard:
 	Python, and things are made	to make your life easier.
 	You can go into "masochist mode" by accessing to the Cython binding
 	methods directly into `PythonFriendlyBoard.board`."""
-	def __init__(self, n_board: int=0, auto_init=True):
+	def __init__(self, board: PyDRSBoard):
 		"""Create an instance of `PythonFriendlyBoard`.
 		
 		Parameters
 		----------
-		n_board: int, default `0`
-			Number of board to connect to. If you are using only a single
-			evaluation board connected through the USB, this number
-			should be 0, which is the default. I have never used more 
-			than one board, but probably if you put 1 you connect to the
-			second board and so on.
 		auto_init: bool, default `True`
 			If `True` the `init` method is called which I believe it sets
 			the board in a well defined state (like a reset).
 		"""
-		ct.check_is_instance(n_board,'n_board',int)
-		ct.check_is_instance(auto_init,'auto_init',bool)
-		self.board = PyDRS().get_board(n_board)
-		if auto_init:
-			self.board.init()
+		ct.check_is_instance(board,'board',PyDRSBoard)
+		self.board = board
 	
 	@property
 	def serial_number(self) -> str:
@@ -193,3 +184,10 @@ class PythonFriendlyBoard:
 			'Amplitude (V)': np.array(self.board.get_waveform_buffer(n_channel-1))*1e-3,
 			'Time (s)': np.array(self.board.get_time_buffer(n_channel-1))*1e-9,
 		}
+	
+	def init(self):
+		"""Initialize the board to a well defined state. The current 
+		implementation of this method just calls the `DRSBoard::Init` 
+		method.
+		"""
+		self.board.init()
