@@ -54,7 +54,6 @@ cdef class PyDRS:
 		return board
 
 cdef class PyBoard:
-	"""A wrapper for the `DRSBoard` class."""
 	cdef DRSBoard *board
 	cdef DRS *drs
 	cdef float waveforms_buffer[8][1024]
@@ -129,7 +128,6 @@ cdef class PyBoard:
 
 	@cython.boundscheck(False)
 	cdef get_wave(self, unsigned int chip_index, unsigned char channel):
-		"""Wrapper for `int DRSBoard::GetWave(unsigned int chipIndex, unsigned char channel, float *waveform)`."""
 		self.board.GetWave(chip_index, 2*channel, self.waveforms_buffer[channel])
 
 	def set_domino_mode(self, mode):
@@ -139,12 +137,12 @@ cdef class PyBoard:
 		VALID_N_CHANNEL = {0,1,2,3}
 		if n_channel not in VALID_N_CHANNEL:
 			raise ValueError(f'`n_channel` must be in {repr(VALID_N_CHANNEL)}.')
-		self.get_wave(0, n_channel)
+		self.get_wave(0, n_channel) # I don't like the `0` hardcoded here, but I am not sure what it does...
 		return self.waveforms_buffer[n_channel]
 	
 	cpdef get_time_buffer(self, int n_channel):
 		VALID_N_CHANNEL = {0,1,2,3}
 		if n_channel not in VALID_N_CHANNEL:
 			raise ValueError(f'`n_channel` must be in {repr(VALID_N_CHANNEL)}.')
-		self.get_wave(0, n_channel)
+		self.get_wave(0, n_channel) # I don't like the `0` hardcoded here, but I am not sure what it does...
 		return self.times_buffer[n_channel]
